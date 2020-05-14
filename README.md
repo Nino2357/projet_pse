@@ -2,11 +2,12 @@
 
 ## Simulation d'une partie de coinche en réseau local
 
-### Phases de la belote
+### Phases de la coinche
 
 
 Formation des équipes
 Choix du score à atteindre
+Affichage des règles
 
 Boucle jusqu'a ce que le score soit atteint par une equipe :
 
@@ -19,12 +20,4 @@ Calcul des scores (à la fin d'une donne)
 
 
 
-### Liste des parties à implenter
 
-[] Préparatifs de la partie 
-    [ ] Formation des équipes
-    [ ] Choix du score à atteindre
-
-[ ] Boucle générale
-    
-[ ] Distribution 
