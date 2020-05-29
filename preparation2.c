@@ -6,6 +6,22 @@
 #include <limits.h>
 #include <sys/socket.h>
 
+deck creer_tas(void);
+deck shuffle(deck deck);
+void distribuer(deck tas, player* ordre);
+bet annonce(player* ordre, team* ordre_t);
+int card_in_hand(card choix, deck hand);
+int ind(int v, int* tab; int size);
+int compare_value_a(int v1, int v2);
+int compare_value_na(int v1, int v2);
+int compare(card carte1, card carte2, int atout, int couleur );
+void concat_deck(deck d1, deck d2);
+void tour(player* ordre, int atout, team* ordre_t);
+void init(void);
+
+
+
+
 deck creer_tas(void)
 {
     deck tas;
@@ -33,12 +49,12 @@ int main(void)
     team team2;
     team1.score=0;
     team2.score=0;
-    team1.p1 = 0;
-    team1.p2 = 1;
-    team2.p1 = 2;
-    team2.p2 = 3;
+    team1.p1.id = 0;
+    team1.p2.id = 1;
+    team2.p1.id = 2;
+    team2.p2.id = 3;
     player ordre[4]={team1.p1,team2.p1,team1.p2,team2.p2};
-    team ordre_t[2]={team1,team2}
+    team ordre_t[2]={team1,team2};
     deck jeu;
     jeu = creer_tas();
     shuffle(jeu)
@@ -55,11 +71,13 @@ int main(void)
     }
     return 0;
 }
-deck shuffle(deck deck){
+deck shuffle(deck deck)
+{
     deck new_deck;
     new_deck.size= 0;
     int compteur = 0;
-    while (deck.size >= new_deck.size){
+    while (deck.size >= new_deck.size)
+    {
         int hasard = (rand()/INT_MAX)*(deck.size);
         if(deck -> tab[hasard] != NULL){
             new_deck -> tab[compteur] = deck -> tab[hasard];
@@ -70,8 +88,10 @@ deck shuffle(deck deck){
     return new_deck;
 }
 
-void distribuer(deck tas, player* ordre){
-    for(int i=0; (i<tas -> size)/4; i++){
+void distribuer(deck tas, player* ordre)
+{
+    for(int i=0; (i<tas -> size)/4; i++)
+    {
         ordre[0]->hand->tab[i]=tas->tab[i];
         tas->tab[i]=NULL
         ordre[1]->hand->tab[i]=tas->tab[i+1];
@@ -88,7 +108,8 @@ void distribuer(deck tas, player* ordre){
 }
 
 
-bet annonce(player* ordre, team* ordre_t){
+bet annonce(player* ordre, team* ordre_t)
+{
     bet mise;
     int compt = 0;
     int last_betting;
@@ -151,14 +172,16 @@ bet annonce(player* ordre, team* ordre_t){
 
 
 
-int card_in_hand(card choix, deck hand){
+int card_in_hand(card choix, deck hand)
+{
     for(int i=0; i<hand -> size; i++)
         if(choix==hand->tab[i])
             return 1
     return 0
 }
 
-int ind(int v, int* tab; int size){
+int ind(int v, int* tab; int size)
+{
     for(int i=0; i<size; i++){
         if(tab[i]==v)
             return i;
