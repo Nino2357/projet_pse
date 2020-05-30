@@ -7,11 +7,6 @@ typedef struct card
     int value;
 }card;
 
-typedef struct mise
-{
-    int color;
-    int goal;
-}mise;
 
 typedef struct deck
 {
@@ -23,13 +18,23 @@ typedef struct deck
 typedef struct player
 {
     int id;
+    int team_id;
     deck hand;
 }player;
 
 typedef struct team
 {
+    int id;
     player p1;
     player p2;
+    int score_hand;
     int score;
     deck team_deck;
 }team;
+
+typedef struct bet
+{
+    int color;
+    int goal;
+    team equipe;
+}bet;

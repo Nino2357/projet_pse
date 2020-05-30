@@ -1,0 +1,91 @@
+// Coté serveur 
+
+
+
+
+struct sockaddr addr_serv ;
+
+addr_serv.sin_t adrIP = 0XC0A81414 ;        //Attention , toujours en haxa , l'addresse ecrite correspond à  192.168.20.20 
+addr_serv.sin_family  = AF_INET    ;        //Pour IPV4 
+addr_serv.sin_port  = htons( 3741) ;        //host to network ou ntohs pour un network to host short 
+addr_serv.sin_addr.s_addr = htonl (adrIP) ; //Addresse ip en host to network long ou ntohl pour un network to host long
+
+struct sockaddr addr_client1 ;
+struct sockaddr addr_client2 ;
+struct sockaddr addr_client3 ;
+struct sockaddr addr_client4 ;
+
+
+addr_client1.sin_t adrIP = 0XC0A81414 ;        //Attention , toujours en haxa , l'addresse ecrite correspond à  192.168.20.20 
+addr_client1.sin_family  = AF_INET    ;        //Pour IPV4 
+addr_client1.sin_port  = htons( 3741) ;        //host to network ou ntohs pour un network to host short 
+addr_client1.sin_addr.s_addr = ntohl (adrIP) ; //Addresse ip en host to network long ou ntohl pour un network to host long
+
+
+addr_client2.sin_t adrIP = 0XC0A81414 ;        //Attention , toujours en haxa , l'addresse ecrite correspond à  192.168.20.20 
+addr_client2.sin_family  = AF_INET    ;        //Pour IPV4 
+addr_client2.sin_port  = htons( 3741) ;        //host to network ou ntohs pour un network to host short 
+addr_client2.sin_addr.s_addr = htonl (adrIP) ; //Addresse ip en host to network long ou ntohl pour un network to host long
+
+addr_client3.sin_t adrIP = 0XC0A81414 ;        //Attention , toujours en haxa , l'addresse ecrite correspond à  192.168.20.20 
+addr_client3.sin_family  = AF_INET    ;        //Pour IPV4 
+addr_client3.sin_port  = htons( 3741) ;        //host to network ou ntohs pour un network to host short 
+addr_client3.sin_addr.s_addr = htonl (adrIP) ; //Addresse ip en host to network long ou ntohl pour un network to host long
+
+addr_client4.sin_t adrIP = 0XC0A81414 ;        //Attention , toujours en haxa , l'addresse ecrite correspond à  192.168.20.20 
+addr_client4.sin_family  = AF_INET    ;        //Pour IPV4 
+addr_client4.sin_port  = htons( 3741) ;        //host to network ou ntohs pour un network to host short 
+addr_client4.sin_addr.s_addr = htonl (adrIP) ; //Addresse ip en host to network long ou ntohl pour un network to host long
+
+
+sockfd = socket(AF_INET , SOCK_STREAM , 0) ;
+bind(sockfd, addr, sizeof(addr)) ;
+listen(sockfd, 4) ;
+accept(sockfd , addr_client1, sizeof(addr_client1));
+
+accept(sockfd , addr_client2, sizeof(addr_client2));
+
+accept(sockfd , addr_client3, sizeof(addr_client3));
+
+accept(sockfd , addr_client4, sizeof(addr_client4));
+
+
+
+
+
+
+//coté client 
+
+//Pour chaque client : 
+
+//addresse serveur à changer 
+
+addr_serv.sin_t adrIP = 0XC0A81414 ;        //Attention , toujours en haxa , l'addresse ecrite correspond à  192.168.20.20 
+addr_serv.sin_family  = AF_INET    ;        //Pour IPV4 
+addr_serv.sin_port  = htons( 3741) ;        //host to network ou ntohs pour un network to host short 
+addr_serv.sin_addr.s_addr = htonl (adrIP) ; //Addresse ip en host to network long ou ntohl pour un network to host long
+
+
+sockfd = socket(AF_INET , SOCK_STREAM , 0) ;
+connect(sockfd , addr_serv, sizeof(addr_serv)) ;
+
+
+
+
+
+//À partir d'ici , les connections sont actives
+
+// Pour envoyer un texte 
+
+char texte[] = "texte test" ; 
+int octet_envoye; 
+
+octet_envoye = send (sockfd , texte , 15 , MSG_DONTWAIT); // Pour que l'opération soit non bloquante 
+
+// Pour recevoir un texte dans une variable texte
+
+char texte[20];
+int octet_recus; 
+
+octet_recus = recv (sockfd , texte , 15 , MSG_DONTWAIT); // Pour que l'opération soit non bloquante 
+
