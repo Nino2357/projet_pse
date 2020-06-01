@@ -19,6 +19,8 @@ void shuffle(deck* deck);
 void read_card(card c);
 void read_hand(player p);
 void read_deck(deck* tas);
+void cut(deck* d, int i);
+void concat_deck(deck* d1, deck* d2);
 
 int main(void)
 {
@@ -51,7 +53,6 @@ int main(void)
     team equipe[2] = {team0,team1};
     jeu = creer_tas();
     printf("test0\n");
-    shuffle(&jeu);
     printf("test1\n");
     return 0;
 }
@@ -101,7 +102,6 @@ void read_card(card c)
     char* values[13]={"As","2","3","4","5","6","7","8","9","10","Valet","Dame","Roi"};
     printf("%s de %s \n", values[c.value-1], colors[c.color]);
 }
- 
 
 void read_hand(player p){
     for(int i=0; i<8; i++){
@@ -114,4 +114,27 @@ void read_deck(deck* tas){
         read_card(tas->tab[i]);
     }
 }
+/*
+void cut(deck* d, int i){
+    printf("test2\n");
+    deck *temp;
+    printf("test3\n");
+    int j=i;
+    printf("j:%d/n",j);
+    for(j=i; j<d->size; j++){
+        printf("j:%d/n",j);
+        //temp->tab[j-i] = d->tab[j];
+        temp->size ++;
+        }
+    d->size=i;
+    concat_deck(temp, d);
+    d = temp;
+}
 
+void concat_deck(deck* d1, deck* d2){
+    for(int i=0;i<d2->size;i++){
+        d1->tab[d1->size]=d2->tab[i];
+        d1->size ++;
+    }
+}
+*/
