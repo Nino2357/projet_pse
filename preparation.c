@@ -28,7 +28,7 @@ int compare_value_na(int v1, int v2); //Permet de comparer deux valeurs de carte
 int compare(card carte1, card carte2, int atout, int couleur ); //compare deux cartes. Retourne 1 si la premiere et plus forte et 2 sinon
 void concat_deck(deck d1, deck d2); // pour ajouter un deck a la suite d'un autre. Utile en fin de tour pour garder une trace du deck.
 player play_round(player ordre[4], int atout, team ordre_t[2]); // effectue un tour de table. on entre l'ordre des joueurs et l'ordre des equipes ainsi que l'atout (pour comparer les cartes)
-void scoref(team ordre_t, int atout); // calcul et print les scores des deux equipes. Maj le score dans les equipes aussi.
+void scoref(team ordre_t[2], int atout); // calcul et print les scores des deux equipes. Maj le score dans les equipes aussi.
 void play_hand(player ordre[4], int atout, team ordre_t[2], bet mise, team equipes[2]); // effectue une main complete (8 tours)
 void pop_card(deck d, card c);
 
@@ -335,22 +335,22 @@ player play_round(player ordre[4], int atout, team ordre_t[2]){
     player winner;
     printf("Premier joueur, quelle carte souhaitez vous jouer? (valeur couleur");
     scanf("%d %d", &choix1.value, &choix1.color);
-    while(card_in_hand(choix, ordre[0].hand)==0){
+    while(card_in_hand(choix1, ordre[0].hand)==0){
         printf("mauvaise entrée recommencez");
         scanf("%d %d", &choix1.value, &choix1.color);
     }
     centre.tab[0] = choix1;
     centre.size ++;
-    pop_card(ordre[0].hand,choix1)
+    pop_card(ordre[0].hand,choix1);
     best = choix1;
     best_equipe=1;
-    winner = ordre[0]
+    winner = ordre[0];
     int couleur = choix1.color;
 
     card choix2;
     printf("Deuxième joueur, quelle carte souhaitez vous jouer? (valeur couleur");
     scanf("%d %d", &choix2.value, &choix2.color);
-    while(card_in_hand(choix, ordre[1].hand)==0){
+    while(card_in_hand(choix1, ordre[1].hand)==0){
         printf("mauvaise entrée recommencez");
         scanf("%d %d", &choix2.value, &choix2.color);
     }
@@ -360,51 +360,51 @@ player play_round(player ordre[4], int atout, team ordre_t[2]){
     if (compare(best,choix2,atout,couleur)==2){
         best = choix2;
         best_equipe=2;
-        winner = ordre[1]
+        winner = ordre[1];
     }    
     
 
     card choix3;
     printf("Troisième joueur, quelle carte souhaitez vous jouer? (valeur couleur");
-    scanf("%d %d", choix3.value, choix3.color);
-    while(card_in_hand(choix, ordre[2].hand)==0){
+    scanf("%d %d", &choix3.value, &choix3.color);
+    while(card_in_hand(choix3, ordre[2].hand)==0){
         printf("mauvaise entrée recommencez");
-        scanf("%d %d", choix3.value, choix3.color);
+        scanf("%d %d", &choix3.value, &choix3.color);
     }
     centre.tab[2] = choix3;
     centre.size ++;
-    pop_card(ordre[2].hand,choix1)
+    pop_card(ordre[2].hand,choix1);
     if (compare(best,choix3,atout,couleur)==2){
         best = choix3;
         best_equipe=1;
-        winner = ordre[2]
+        winner = ordre[2];
     }   
 
     card choix4;
     printf("Quatrième joueur, quelle carte souhaitez vous jouer? (valeur couleur");
-    scanf("%d %d", choix4.value, choix4.color);
-    while(card_in_hand(choix, ordre[3].hand)==0){
+    scanf("%d %d", &choix4.value, &choix4.color);
+    while(card_in_hand(choix4, ordre[3].hand)==0){
         printf("mauvaise entrée recommencez");
-        scanf("%d %d", choix4.value, choix4.color);
+        scanf("%d %d", &choix4.value, &choix4.color);
     }
     centre.tab[3] = choix4;
     centre.size ++;
-    pop_card(ordre[3].hand,choix1)
+    pop_card(ordre[3].hand,choix1);
     if (compare(best,choix4,atout,couleur)==2){
         best = choix4; 
         best_equipe=2; 
-        winner = ordre[3]
+        winner = ordre[3];
     }
-    concat_deck(ordre_t[best_equipe-1].deck, centre);
-    return winner
+    concat_deck(ordre_t[best_equipe-1].team_deck, centre);
+    return winner;
 }
 
 void change_order(player ordre[4], team ordre_t[2], player winner, team equipes[2]){ 
     if(ordre[0].id != winner.id){ //on verifie que ce ne soit pas le premier joueur qui soit deja gagnant et donc que l'ordre change bien
         for(int i; i<4; i++){
-            ((winner.id) + i) % 4
-            ordre[i] = (equipes[(((winner.id) + i) % 4)/2].p)[(((winner.id) + i) % 4)%2] // calcul complexe mdr. On change l'ordre et on veut recuperer les bon player. on se sert donc de l'ordre des equipes pour recuper les joueurs dans les equipes et avec un sage usage des quotients et reste changer l'ordre.
-        }
+            ((winner.id) + i) % 4; //Pas d'affectation ?
+         //   ordre[i] = (equipes[(((winner.id) + i) % 4)/2].p1)[(((winner.id) + i) % 4)%2]; // calcul complexe mdr. On change l'ordre et on veut recuperer les bon player. on se sert donc de l'ordre des equipes pour recuper les joueurs dans les equipes et avec un sage usage des quotients et reste changer l'ordre.
+        } //ajouter p2
         if(ordre[0].id%2==0){
             if(ordre_t[0].id!=0){
                 team temp= ordre_t[0];
@@ -416,29 +416,29 @@ void change_order(player ordre[4], team ordre_t[2], player winner, team equipes[
 }
 
 
-void scoref(team ordre_t, int atout){
+void scoref(team ordre_t[2], int atout){
     int val_atout[13] = {11,0,0,0,0,0,0,0,14,10,20,3,4};
     int val_natout[13] = {11,0,0,0,0,0,0,0,0,10,2,3,4};
     for(int i; i<2; i++){
-        for(int j; j<ordre_t[i].team_deck; j++){
-            if(i<ordre_t[i].team_deck[j].color == atout)
-                ordre_t[i].score_hand = ordre_t[i].score_hand + val_atout[i<ordre_t[i].team_deck[j].value-1];
+        for(int j; j<ordre_t[i].team_deck.size; j++){
+            if(i<ordre_t[i].team_deck.tab[i].color == atout) //Pas d'attribut color
+                ordre_t[i].score_hand = ordre_t[i].score_hand + val_atout[i<ordre_t[i].team_deck.tab[j].value-1];
             else
-                ordre_t[i].score_hand = ordre_t[i].score_hand + val_natout[i<ordre_t[i].team_deck[j].value-1];
+                ordre_t[i].score_hand = ordre_t[i].score_hand + val_natout[i<ordre_t[i].team_deck.tab[j].value-1];
         }
-        printf("Le score de l'equipe %d est %d", ordre_t.id, ordre_t[i].score_hand);
+        printf("Le score de l'equipe %d est %d", ordre_t[i].id, ordre_t[i].score_hand);
     }
 }
 
-void play_hand(player ordre[4], team ordre_t[2], bet mise, team equipes[2]){
+void play_hand(player ordre[4], int atout, team ordre_t[2], bet mise, team equipes[2]){
     for(int i=0; i<8; i++){
         // A chaque tour d'une main, il faut: changer l'ordre en fonction du gagnant du tour precedent,  calculer et afficher les scores)
-        change_order(ordre, ordre_t, ordre[play_round(ordre, mise.color, ordre_t, equipes)]);
+        change_order(ordre, ordre_t, ordre[play_round(ordre, mise.color, ordre_t).id],equipes);
         scoref(ordre_t, mise.color);
     }
     //calcul final des scores et ajout dans le score
     // On commence par l'équipe qui a mise
-    if(ordre_t[0].id==mise.team.id){
+    if(ordre_t[0].id==mise.equipe.id){
         if(ordre_t[0].score_hand<mise.goal){ //Premier cas, les preneurs chutent
             ordre_t[1].score = ordre_t[1].score + mise.goal + 160; //Les defenseurs marquent la mise annoncee et 160 points de chute
         }
