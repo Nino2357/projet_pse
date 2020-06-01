@@ -1,1 +1,0 @@
-#define SCORE_A_ATTEINDRE 1000

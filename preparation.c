@@ -1,10 +1,9 @@
-#include "define.h"
 #include "structure.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
-#include <sys/socket.h>
+//#include <sys/socket.h>
 #include <stdbool.h>
 
 /*
@@ -34,6 +33,7 @@ void pop_card(deck d, card c);
 
 int main(void)
 {
+    printf("debut main");
     /* On récupère les ID des 4 joueurs
      et on les stock dans une liste d'int*/
     int list_player[4]={0,1,2,3};
@@ -60,8 +60,10 @@ int main(void)
     team ordre_t[2]={team0,team1};
     deck jeu;
     team equipe[2] = {team0,team1};
+    printf("test0");
     jeu = creer_tas();
     shuffle(jeu);
+    printf("test1");
     while(team0.score<1000 && team1.score<1000)
     {
         distribuer(jeu,ordre);
@@ -74,9 +76,10 @@ int main(void)
         }
         play_hand(ordre,mise.color,ordre_t,mise,equipe);
         
-    }
+    }printf("test2");
     return 0;
 }
+
 
 deck creer_tas(void)
 {
