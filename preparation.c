@@ -21,6 +21,7 @@ void read_hand(player p);
 void read_deck(deck* tas);
 void cut(deck* d, int i);
 void concat_deck(deck* d1, deck* d2);
+void distribuer(deck* tas, player ordre[4]);
 
 int main(void)
 {
@@ -51,9 +52,17 @@ int main(void)
     team ordre_t[2]={team0,team1};
     deck jeu;
     team equipe[2] = {team0,team1};
-    jeu = creer_tas();
-    printf("test0\n");
-    printf("test1\n");
+    jeu = creer_tas(); //Création d'un tas ordonné
+    shuffle(&jeu);  //Mélange tu tas
+    //read_deck(&jeu); //Affichage du tas (juste pour debug)
+    distribuer(&jeu,ordre); //distribution du deck mélangé aux 4 joueurs
+    for(int i=0; i<4 ; i++) //Lecture des 4 mains (juste pour debug)
+    {
+        printf("Joueur %d : \n", i);
+        read_hand(ordre[i]);
+        printf("\n\n");
+    }
+    // A faire : Afficher la main à chaque client
     return 0;
 }
 
@@ -114,27 +123,24 @@ void read_deck(deck* tas){
         read_card(tas->tab[i]);
     }
 }
-/*
-void cut(deck* d, int i){
-    printf("test2\n");
-    deck *temp;
-    printf("test3\n");
-    int j=i;
-    printf("j:%d/n",j);
-    for(j=i; j<d->size; j++){
-        printf("j:%d/n",j);
-        //temp->tab[j-i] = d->tab[j];
-        temp->size ++;
-        }
-    d->size=i;
-    concat_deck(temp, d);
-    d = temp;
-}
 
-void concat_deck(deck* d1, deck* d2){
-    for(int i=0;i<d2->size;i++){
-        d1->tab[d1->size]=d2->tab[i];
-        d1->size ++;
+
+void distribuer(deck* tas, player ordre[4]){
+    for(int i=0; i<(tas->size)/4; i++){
+        //printf("%d %d \n",tas->size,i);
+        ordre[0].hand.tab[i]=tas->tab[i*4];
+        tas->tab[i].value=0;
+        ordre[1].hand.tab[i]=tas->tab[i*4+1];
+        tas->tab[i*4+1].value=0;
+        ordre[2].hand.tab[i]=tas->tab[i*4+2];
+        tas->tab[i*4+2].value=0;
+        ordre[3].hand.tab[i]=tas->tab[i*4+3];
+        tas->tab[i*4+3].value=0;
+        //printf("%d %d \n",ordre[0].hand.tab[i].color,ordre[0].hand.tab[i].value);
     }
+    //read_hand(ordre[0]);
+    ordre[0].hand.size=8;
+    ordre[1].hand.size=8;
+    ordre[2].hand.size=8;
+    ordre[3].hand.size=8;
 }
-*/
