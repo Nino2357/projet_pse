@@ -1,3 +1,18 @@
+#ifndef STRUCT_H
+#define STRUCT_H
+
+//Include
+#include "client.h"
+#include "serveur.h"
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <sys/socket.h>
+#include <stdbool.h>
+
+
+
 
 //Structure
 
@@ -19,6 +34,7 @@ typedef struct player
 {
     int id;
     int team_id;
+    team equipe;
     deck hand;
 }player;
 
@@ -37,4 +53,7 @@ typedef struct bet
     int color;
     int goal;
     team equipe;
+    player joueur;
 }bet;
+
+#endif

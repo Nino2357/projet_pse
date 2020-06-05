@@ -1,3 +1,6 @@
+#ifndef SERV_H
+#define SERV_H
+
 #include "pse.h"
 
 //#define    CMD      "serveur"
@@ -7,3 +10,5 @@
 void *worker(void *arg);
 void sessionClient(int canal);
 void remiseAZeroJournal(void);
+
+#endif

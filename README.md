@@ -2,6 +2,29 @@
 
 ## Simulation d'une partie de coinche en réseau local
 
+### Notes 
+
+Pour l'instant, je n'ai pas reussi à adapter le makefile donc j'utilise que le fichier preparation
+Il y a des warnings quand on fait make mais c'est pas un probleme, c'est juste en attendant qu'on utilise toutes les variables
+Pour executer ./preparation du coup
+
+### Utilisation
+
+`cd projet`
+`make`
+`preparation`
+
+### Structure du dossier
+
+- include/lib/modules provenant du cours de pse
+- projet : ensemble des fichiers utiles au programmes
+    + Main
+    + Préparation
+    + Annonce
+    + Client 
+    + Serveur
+- documentations + fichiers non utilisés
+
 ### Phases de la coinche
 
 * Préparation de la partie

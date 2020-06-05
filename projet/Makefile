@@ -2,7 +2,7 @@
 #
 include ../Makefile.inc
 
-EXE = serveur client preparation
+EXE = serveur client preparation annonce
 
 all: ${EXE}
 

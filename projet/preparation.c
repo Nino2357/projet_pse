@@ -1,13 +1,4 @@
-#include "structure.h"
-#include "client.h"
-#include "serveur.h"
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
-#include <sys/socket.h>
-#include <stdbool.h>
-
+#include "preparation.h"
 /*
 -Finir de corriger la synthaxe
 -Rajouter :  couper  à la fin d'une main (pop et concatenation)
@@ -16,16 +7,12 @@
 -Afficher les cartes jouées et sa main dans play_round
 */
 
-deck creer_tas(void);
-void shuffle(deck* deck);
-void read_card(card c);
-void read_hand(player p);
-void read_deck(deck* tas);
-void cut(deck* d, int i);
-void concat_deck(deck* d1, deck* d2);
-void distribuer(deck* tas, player ordre[4]);
-
 int main(void)
+{
+    preparation();
+}
+
+int preparation(void)
 {
 	srand (time (NULL));
     /* On récupère les ID des 4 joueurs
