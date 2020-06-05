@@ -1,7 +1,4 @@
-#include "pse.h"
-
-#define   CMD         "serveur"
-#define   NB_WORKERS   50
+#include "serveur.h"
 
 void creerCohorteWorkers(void);
 int chercherWorkerLibre(void);

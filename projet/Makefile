@@ -2,7 +2,7 @@
 #
 include ../Makefile.inc
 
-EXE = exercice1 exercice2 serveur client
+EXE = serveur client preparation
 
 all: ${EXE}
 

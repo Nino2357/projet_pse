@@ -1,6 +1,4 @@
-#include "pse.h"
-
-#define CMD   "client"
+#include "client.h"
 
 int main(int argc, char *argv[]) {
   int sock, ret;
