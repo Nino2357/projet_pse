@@ -11,9 +11,6 @@
 #include <sys/socket.h>
 #include <stdbool.h>
 
-
-
-
 //Structure
 
 typedef struct card
@@ -34,7 +31,6 @@ typedef struct player
 {
     int id;
     int team_id;
-    team equipe;
     deck hand;
 }player;
 
