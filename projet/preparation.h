@@ -12,5 +12,6 @@ void cut(deck* d, int i);
 void concat_deck(deck* d1, deck* d2);
 void distribuer(deck* tas, player ordre[4]);
 int preparation(void);
+bet annonce(player ordre[4]);
 
 #endif
