@@ -2,8 +2,8 @@
 #define STRUCT_H
 
 //Include
-#include "client.h"
-#include "serveur.h"
+//#include "client.h"
+//#include "serveur.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,6 +12,7 @@
 #include <stdbool.h>
 
 //Structure
+
 
 typedef struct card
 {

@@ -6,6 +6,7 @@
 //#define    CMD      "serveur"
 #define nb_threads 5
 #define   NB_WORKERS   50
+#define CMD   "serveur"
 
 void *worker(void *arg);
 void sessionClient(int canal);

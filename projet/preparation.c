@@ -1,4 +1,5 @@
 #include "preparation.h"
+
 /*
 -Finir de corriger la synthaxe
 -Rajouter :  couper  à la fin d'une main (pop et concatenation)
@@ -9,9 +10,52 @@
 
 int main(void)
 {
+    
     preparation();
 }
+/*
+void reseau(void);
+{
+    struct sockaddr_in addr_serv;
+    addr_serv.sin_family = AF_INET;
+    addr_serv.sin_port = htons(3000);
+    addr_serv.sin_addr.s_addr = INADDR_ANY;
 
+    int sockfd = socket(AF_INET,SOCK_STREAM,0);
+    if ( sockfd == -1 ) 
+    {
+        perror ("socket" );
+        exit ( EXIT_FAILURE );
+    }
+    if (bind(sockfd, (struct sockaddr *) &addr_serv, sizeof(addr_serv))!=0)
+    {
+        perror ( "bind" );
+        exit ( EXIT_FAILURE );   
+    }
+    if ( listen ( sockfd, 4 ) != 0 ) 
+    {
+        perror ( "listen" );
+        exit ( EXIT_FAILURE );
+    }
+    struct sockaddr_in addr_cli[4];
+    int sockconn[4];
+    for(int cli=0; cli<4; cli++)
+    {
+        addr_cli[cli].sin_family = AF_INET;
+        addr_cli[cli].sin_port = htons(3000);
+        addr_cli[cli].sin_addr.s_addr = INADDR_ANY;
+        sockconn[cli] = accept ( sockfd, (struct sockaddr *) addr_cli[cli], sizeof(addr_cli));
+        if ( sockconn[cli] == -1 ) 
+        { 
+            perror ( "accept" ); 
+            exit ( EXIT_FAILURE ); 
+        }
+
+    }
+
+
+}
+*/
 int preparation(void)
 {
 	srand (time (NULL));

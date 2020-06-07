@@ -1,55 +1,64 @@
-#include "serveur.h"
+//Basé sur le code serveur du TP 7
 
-void creerCohorteWorkers(void);
-int chercherWorkerLibre(void);
-void *threadWorker(void *arg);
+#include "pse.h"
+
+#define    CMD      "serveur"
+#define nb_threads 10
+
+//Initialisation des variables globales et fonctions utilisées dans les différents threads ainsi que du journal
+void *worker(void *arg);
 void sessionClient(int canal);
-int ecrireJournal(char *buffer);
 void remiseAZeroJournal(void);
-void lockMutexJournal(void);
-void unlockMutexJournal(void);
-void lockMutexCanal(int numWorker);
-void unlockMutexCanal(int numWorker);
+void *retour_client(void *arg);
 
 int fdJournal;
-DataSpec dataSpec[NB_WORKERS];
-sem_t semWorkersLibres;
+DataSpec workers[nb_threads];
+DataSpec workers_ret[nb_threads];
+char ligne_globale[LIGNE_MAX];
 
-// la remise a zero du journal modifie le descripteur du fichier, il faut donc
-// proteger par un mutex l'ecriture dans le journal et la remise a zero
-pthread_mutex_t mutexJournal;
+char client_names[nb_threads][20];
+int client_votes[nb_threads];
 
-// pour l'acces au canal d'un worker peuvant etre en concurrence la recherche
-// d'un worker libre et la mise à -1 du canal par le worker
-pthread_mutex_t mutexCanal[NB_WORKERS];
+
 
 int main(int argc, char *argv[]) {
+
+  //Initialisation des variables et du journal
   short port;
   int ecoute, canal, ret;
   struct sockaddr_in adrEcoute, adrClient;
   unsigned int lgAdrClient;
-  int numWorkerLibre;
-  
+
+  for(int i = 0;i<nb_threads;i++)
+	strcpy(client_names[i],"/");
+  for(int i = 0;i<nb_threads;i++)
+	client_votes[i] = 0;
+
   fdJournal = open("journal.log", O_WRONLY|O_CREAT|O_APPEND, 0644);
   if (fdJournal == -1)
     erreur_IO("ouverture journal");
 
-  creerCohorteWorkers();
-
-  ret = sem_init(&semWorkersLibres, 0, NB_WORKERS);
-  if (ret == -1)
-    erreur_IO("init sem workers libres");
-
   if (argc != 2)
     erreur("usage: %s port\n", argv[0]);
 
+  //création des threads
+  for(int i = 0; i <nb_threads; i++)
+  {
+	workers[i].canal = -1;
+	sem_init(&workers[i].sem, 0, 0);
+	sem_init(&workers_ret[i].sem, 0, 0);
+	workers[i].tid = i;
+	pthread_create(&workers[i].id, NULL, worker, &workers[i].tid);
+  }
+
+  //Initialisation de la connexion
   port = (short)atoi(argv[1]);
 
   printf("%s: creating a socket\n", CMD);
   ecoute = socket (AF_INET, SOCK_STREAM, 0);
   if (ecoute < 0)
     erreur_IO("socket");
-  
+
   adrEcoute.sin_family = AF_INET;
   adrEcoute.sin_addr.s_addr = INADDR_ANY;
   adrEcoute.sin_port = htons(port);
@@ -57,13 +66,16 @@ int main(int argc, char *argv[]) {
   ret = bind (ecoute,  (struct sockaddr *)&adrEcoute, sizeof(adrEcoute));
   if (ret < 0)
     erreur_IO("bind");
-  
+
   printf("%s: listening to socket\n", CMD);
   ret = listen (ecoute, 5);
   if (ret < 0)
     erreur_IO("listen");
-  
+
+  initDataThread();
   while (VRAI) {
+
+	//Connexion aux clients et attente de la libération d'un thread le cas échéant
     printf("%s: accepting a connection\n", CMD);
     canal = accept(ecoute, (struct sockaddr *)&adrClient, &lgAdrClient);
     if (canal < 0)
@@ -72,15 +84,20 @@ int main(int argc, char *argv[]) {
     printf("%s: adr %s, port %hu\n", CMD,
 	      stringIP(ntohl(adrClient.sin_addr.s_addr)), ntohs(adrClient.sin_port));
 
-    ret = sem_wait(&semWorkersLibres);  // attente d'un worker libre
-    if (ret == -1)
-      erreur_IO("wait sem workers libres");
-    numWorkerLibre = chercherWorkerLibre();
+	int libre = -1;
+	while(libre == -1)
+	{
+			for(int i = 0; i<nb_threads; i++)
+				if(workers[i].canal == -1)
+				{
+					libre = i;
+					break;
+				}
+			usleep(100000);
+	}
+	workers[libre].canal = canal;
+	sem_post(&workers[libre].sem);
 
-    dataSpec[numWorkerLibre].canal = canal;
-    sem_post(&dataSpec[numWorkerLibre].sem);  // reveil du worker
-    if (ret == -1)
-      erreur_IO("post sem worker");
   }
 
   if (close(ecoute) == -1)
@@ -89,75 +106,52 @@ int main(int argc, char *argv[]) {
   if (close(fdJournal) == -1)
     erreur_IO("fermeture journal");
 
+  libererDataThread();
   exit(EXIT_SUCCESS);
 }
 
-void creerCohorteWorkers(void) {
-  int i, ret;
-
-  for (i= 0; i < NB_WORKERS; i++) {
-    dataSpec[i].canal = -1;
-    dataSpec[i].tid = i;
-    ret = sem_init(&dataSpec[i].sem, 0, 0);
-    if (ret == -1)
-      erreur_IO("init sem worker");
-
-    ret = pthread_create(&dataSpec[i].id, NULL, threadWorker, &dataSpec[i]);
-    if (ret != 0)
-      erreur_IO("creation thread");
-  }
+//Fonction de chaque thread avec attente de la libération du thread pour effectuer la fonction client
+void *worker(void *arg) {
+	int *tid = (int*)arg;
+	while(1)
+	{
+		sem_wait(&workers[*tid].sem);
+		sem_init(&workers_ret[*tid].sem, 0, 0);
+		pthread_create(&workers_ret[*tid].id, NULL, retour_client, tid);
+		sessionClient(workers[*tid].canal);
+		workers[*tid].canal = -1;
+		workers_ret[*tid].canal = -1;
+	}
+	pthread_exit(NULL);
 }
 
-// retourne le no. du worker libre trouve ou -1 si pas de worker libre
-int chercherWorkerLibre(void) {
-  int numWorkerLibre = -1, i = 0, canal;
-
-  while (numWorkerLibre < 0 && i < NB_WORKERS) {
-    lockMutexCanal(i);
-    canal = dataSpec[i].canal;
-    unlockMutexCanal(i);
-
-    if (canal == -1)
-      numWorkerLibre = i;
-    else
-      i++;
-  }
-
-  return numWorkerLibre;
-}
-
-void *threadWorker(void *arg) {
-  DataSpec *dataTh = (DataSpec *)arg;
-  int ret;
-
-  while (VRAI) {
-    ret = sem_wait(&dataTh->sem); // attente reveil par le thread principal
-    if (ret == -1)
-      erreur_IO("wait sem worker");
-
-    printf("%s: worker %d reveil\n", CMD, dataTh->tid);
-
-    sessionClient(dataTh->canal);
-
-    lockMutexCanal(dataTh->tid);
-    dataTh->canal = -1;
-    unlockMutexCanal(dataTh->tid);
-
-    ret = sem_post(&semWorkersLibres);  // incrementer le nb de workers libres
-    if (ret == -1)
-      erreur_IO("post sem workers libres");
-
-    printf("%s: worker %d sommeil\n", CMD, dataTh->tid);
-  }
-
-  pthread_exit(NULL);
-}
-
+//Fonction client transmettant les messages entre les clients et effectuant les différentes commandes
 void sessionClient(int canal) {
   int fin = FAUX;
   char ligne[LIGNE_MAX];
+  char ligne2[LIGNE_MAX];
   int lgLue;
+  char nom[20];
 
+  //Initialisation du nom du client
+  lgLue = lireLigne(canal, ligne);
+    if (lgLue < 0)
+      erreur_IO("lireLigne");
+    else if (lgLue == 0)
+      erreur("interruption client\n");
+	strncpy(nom,ligne,20);
+
+	for(int i = 0;i<2*nb_threads;i++){
+		if(strcmp(client_names[i%nb_threads],nom) == 0)
+			break;
+		if(strcmp(client_names[i%nb_threads],"/") == 0 && i >= nb_threads){
+			strcpy(client_names[i%nb_threads],nom);
+			break;
+		}
+	}
+	printf("%s s'est connecté au serveur\n", nom);
+
+  //Boucle de communication
   while (!fin) {
     lgLue = lireLigne(canal, ligne);
     if (lgLue < 0)
@@ -165,83 +159,118 @@ void sessionClient(int canal) {
     else if (lgLue == 0)
       erreur("interruption client\n");
 
-    printf("%s: reception %d octets : \"%s\"\n", CMD, lgLue, ligne);
-
-    if (strcmp(ligne, "fin") == 0) {
-        printf("%s: fin client\n", CMD);
+    //Commande d'arrêt du client
+    if (strcmp(ligne, "/fin") == 0) {
         fin = VRAI;
     }
-    else if (strcmp(ligne, "init") == 0) {
-      printf("%s: remise a zero journal\n", CMD);
+
+	//Commande de remise a zéro du journal et des votes
+    else if (strcmp(ligne, "/clear") == 0) {
+      printf("%s: remise a zero journal et des votes\n", CMD);
       remiseAZeroJournal();
+	  for(int i = 0;i<nb_threads;i++){
+			client_votes[i] = 0;
+		}
     }
-    else if (ecrireJournal(ligne) != -1) {
-        printf("%s: ligne de %d octets ecrite dans journal\n", CMD, lgLue);
+
+	//Commande envoyant le nombre de vote de chaque client aux clients
+	else if (strcmp(ligne, "/votecount") == 0) {
+		for(int i = 0;i<nb_threads;i++){
+			if(strcmp(client_names[i],"/") != 0){
+				sprintf(ligne_globale,"%d votes contre %s\n",client_votes[i],client_names[i]);
+				for(int j = 0; j <nb_threads; j++)
+				{
+					sem_post(&workers_ret[j].sem);
+				}
+			}
+		}
     }
-    else
-      erreur_IO("ecriture journal");
-  } // fin while
+
+	//Commande ajoutant un vote contre un client
+	else if (strcmp(ligne, "/vote") == 0) {
+
+	lgLue = lireLigne(canal, ligne);
+    if (lgLue < 0)
+      erreur_IO("lireLigne");
+    else if (lgLue == 0)
+      erreur("interruption client\n");
+
+    for(int i = 0;i<nb_threads;i++){
+		if(strcmp(client_names[i],ligne) == 0)
+			client_votes[i]++;
+	}
+
+	strcpy(ligne2,nom);
+	strcat(ligne2," a voté contre ");
+	strncat(ligne2,ligne,LIGNE_MAX);
+	strcpy(ligne_globale,ligne2);
+    for(int i = 0; i <nb_threads; i++)
+		{
+			if(workers[i].canal != canal)
+				sem_post(&workers_ret[i].sem);
+		}
+    }
+	else{
+		strcpy(ligne2,nom);
+		strcat(ligne2," > ");
+		strncat(ligne2,ligne,LIGNE_MAX);
+		strcpy(ligne_globale,ligne2);
+		for(int i = 0; i <nb_threads; i++)
+		{
+			if(workers[i].canal != canal)
+				sem_post(&workers_ret[i].sem);
+		}
+		if (ecrireLigne(fdJournal, ligne_globale) != -1) {
+			printf("%s: ligne de %d octets ecrite dans journal\n", CMD, lgLue);
+		}
+		else
+			erreur_IO("ecriture journal");
+	}
+
+  }
+
+  //Déconnexion du client et réinitialisation des variables correspondant
+  printf("%s s'est déconnecté du serveur\n", nom);
+  sprintf(ligne_globale,"%s s'est déconnecté du serveur\n", nom);
+  for(int i = 0; i <nb_threads; i++)
+		{
+			if(workers[i].canal != canal)
+				sem_post(&workers_ret[i].sem);
+		}
+  for(int i = 0;i<nb_threads;i++){
+		if(strcmp(client_names[i],nom) == 0){
+			strcpy(client_names[i],"/");
+			client_votes[i] = 0;
+		}
+  }
 
   if (close(canal) == -1)
     erreur_IO("fermeture canal");
 }
 
-int ecrireJournal(char *buffer)
-{
-  int lgLue;
-
-  lockMutexJournal();
-  lgLue = ecrireLigne(fdJournal, buffer);
-  unlockMutexJournal();
-  return lgLue;
-}
-
-// le fichier est ferme et rouvert vide
+//Fonction de remise à zéro du journal
 void remiseAZeroJournal(void) {
-  lockMutexJournal();
-
   if (close(fdJournal) == -1)
     erreur_IO("raz journal - fermeture");
 
   fdJournal = open("journal.log", O_WRONLY|O_TRUNC|O_APPEND, 0644);
   if (fdJournal == -1)
     erreur_IO("raz journal - ouverture");
-
-  unlockMutexJournal();
 }
 
-void lockMutexJournal(void)
-{
-  int ret;
-
-  ret = pthread_mutex_lock(&mutexJournal);
-  if (ret != 0)
-    erreur_IO("lock mutex journal");
-}
-
-void unlockMutexJournal(void)
-{
-  int ret;
-
-  ret = pthread_mutex_unlock(&mutexJournal);
-  if (ret != 0)
-    erreur_IO("lock mutex journal");
-}
-
-void lockMutexCanal(int numWorker)
-{
-  int ret;
-
-  ret = pthread_mutex_lock(&mutexCanal[numWorker]);
-  if (ret != 0)
-    erreur_IO("lock mutex dataspec");
-}
-
-void unlockMutexCanal(int numWorker)
-{
-  int ret;
-
-  ret = pthread_mutex_unlock(&mutexCanal[numWorker]);
-  if (ret != 0)
-    erreur_IO("lock mutex dataspec");
+//Fonction de chaque thread secondaire servant a communiquer les messages aux clients (de la part du serveur ou d'autres clients)
+void *retour_client(void *arg) {
+	int *tid = (int*)arg;
+	int lgEcr;
+	while(1)
+	{
+		sem_wait(&workers_ret[*tid].sem);
+	    lgEcr = ecrireLigne(workers[*tid].canal, ligne_globale);
+		if (lgEcr == -1)
+		{
+			close(workers_ret[*tid].canal);
+			pthread_exit(NULL);
+		}
+	}
+	pthread_exit(NULL);
 }
