@@ -24,8 +24,34 @@ void partie(void)
     team1.id = 1;
     player liste_joueur[4]={p0,p1,p2,p3};
     init_serveur(liste_joueur);
+    deck tas;
+    preparation_partie(liste_joueur);
+
 }
 
+void preparation_partie(player *liste_joueur)
+{
+    deck jeu;
+    jeu = creer_tas(); //Création d'un tas ordonné
+    char msg[200];
+    sprintf(msg,"Affichage du paquet de cartes: \n");
+    
+    write(liste_joueur[0].sockid,msg,sizeof(msg));
+    write(liste_joueur[1].sockid,msg,sizeof(msg));
+    write(liste_joueur[2].sockid,msg,sizeof(msg));
+    write(liste_joueur[3].sockid,msg,sizeof(msg));
+    char carte[100];
+    for(int c=0; c<32;c++)
+    {
+        write(liste_joueur[0].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
+        write(liste_joueur[1].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
+        write(liste_joueur[2].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
+        write(liste_joueur[3].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
+    }
+    //shuffle(&jeu);  //Mélange du tas
+    //distribuer(&jeu,liste_joueur); //distribution du deck mélangé aux 4 joueurs
+}
+ 
 void init_serveur(player *liste_joueur) //Initialise le serveur et prend les adresses des clients
 {
     //Création du serveur
@@ -36,7 +62,7 @@ void init_serveur(player *liste_joueur) //Initialise le serveur et prend les adr
 
     int sockfd = socket(AF_INET,SOCK_STREAM,0);
     if ( sockfd == -1 ) 
-    {
+    { 
         perror ("socket" );
         exit ( EXIT_FAILURE );
     }
@@ -67,14 +93,63 @@ void init_serveur(player *liste_joueur) //Initialise le serveur et prend les adr
             perror ( "accept" ); 
             exit ( EXIT_FAILURE ); 
         }
-        sprintf(msg,"Bienvenue_joueur p%d \nVeillez entrez votre nom svp :\n",cli);
+        sprintf(msg,"Bienvenue joueur p%d \nVeillez entrez votre nom svp :\n",cli);
         liste_joueur[cli].sockid = sockconn[cli];
-        printf("%d, %d\n",sockconn[cli],liste_joueur[cli].sockid);
-        write(sockconn[cli],msg,sizeof(msg));
+        write(liste_joueur[cli].sockid,msg,sizeof(msg));
         read(sockconn[cli],name,sizeof(name));
         strcpy(liste_joueur[cli].name,name);
-        printf("%s, %s\n",name,liste_joueur[cli].name);
+        printf("Connexion du joueur p%d de nom: %s (sockid: %d)\n",cli,liste_joueur[cli].name,liste_joueur[cli].sockid);
         sprintf(msg,"Bienvenue %s\n",name);
-        write(sockconn[cli],msg,sizeof(msg));
+        write(liste_joueur[cli].sockid,msg,sizeof(msg));
     }
+}
+
+
+deck creer_tas(void) //Crée le tas de 32 cartes dans l'ordre
+{
+    deck tas;
+    tas.size=32;
+    int compteur = 0;
+    for(int couleur=0;couleur<4;couleur++) // Fais le tour des 4 couleurs
+    {
+
+    	for(int valeur=7;valeur<14;valeur++) //Ajoute les cartes du 7 au roi
+        {
+            card new;
+            new.color=couleur;
+            new.value = valeur;
+            tas.tab[compteur]=new;
+            compteur ++;
+        }
+        card new; //Ajoute l'As
+        new.color=couleur;
+        new.value = 1;
+        tas.tab[compteur]=new;
+        compteur ++;
+   }
+   return tas;
+
+}
+
+void shuffle(deck* deck){
+    card temp;
+
+    for(int i = 0; i<1000; i++){
+        int hasard1 =rand()%(deck->size - 1);
+        temp = deck->tab[hasard1];
+        int hasard2 =rand()%(deck->size - 1);
+        deck->tab[hasard1] = deck->tab[hasard2];
+        deck->tab[hasard2] = temp;
+    }
+
+}
+
+
+char* read_card(card c,char *carte)
+{
+
+    char* colors[4]={"coeur","carreau","pique","trefle"};
+    char* values[13]={"As","2","3","4","5","6","7","8","9","10","Valet","Dame","Roi"};
+    sprintf(carte,"%s de %s", values[c.value-1], colors[c.color]);
+    return carte;
 }

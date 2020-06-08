@@ -5,8 +5,15 @@ int main(int argc, char *argv[])
     partie();
     return 0;
 }
-
+ 
 void partie(void)
+{
+    int sockfd;
+    sockfd = init_serveur();
+    preparation_partie(sockfd);
+}
+ 
+int init_serveur(void)
 {
     struct sockaddr_in addr_serv;
     int sockfd= socket (AF_INET, SOCK_STREAM, 0);
@@ -22,11 +29,27 @@ void partie(void)
     }
     char msg[100];
     char name[10];
-    printf("connexion reussie\n");
+    printf("connexion reussie, attendez un peu svp\n");
     read(sockfd,msg,sizeof(msg));
     printf("%s\n",msg);
     scanf("%s",name);
     write(sockfd,name,sizeof(name));
     read(sockfd,msg,sizeof(msg));
     printf("message du serveur : %s\n",msg);
-}
+    return sockfd;
+}  
+
+void preparation_partie(int sockfd)
+{ 
+    char msg[200];
+    read(sockfd,msg,sizeof(msg));
+    printf("%s\n",msg);
+    char carte[100];
+    for(int c=0; c<32;c++) 
+    {
+        read(sockfd,carte,sizeof(carte)); 
+        printf("%s\n",carte);
+    }
+
+
+}  

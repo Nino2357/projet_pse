@@ -5,6 +5,7 @@
 #include "pse.h"
 
 void partie(void);
-
+int init_serveur(void);
+void preparation_partie(int sockfd);
 
 #endif
