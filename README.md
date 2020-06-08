@@ -2,17 +2,25 @@
 
 ## Simulation d'une partie de coinche en réseau local
 
+### A faire
+
+Debugger les fonctions play_hand et play_round
+
+Finir d'implementer la partie serveur/client pour tout les parties du programmes restantes (distribuer, annonce, play_hand, play-round)
+
 ### Notes 
 
-Pour l'instant, je n'ai pas reussi à adapter le makefile donc j'utilise que le fichier preparation
 Il y a des warnings quand on fait make mais c'est pas un probleme, c'est juste en attendant qu'on utilise toutes les variables
-Pour executer ./preparation du coup
 
 ### Utilisation
 
-`cd projet`
-`make`
-`preparation`
+`cd serveur`
+`make` -> 2 fichiers sont crées (serveur_coinche et client_coinche)
++ Pour le serveur
+`./serveur_coinche` (rien à écrire, le programme gere le serveur)
++ Pour le client (Il en faut 4 obligatoirement - 1 par joueur)
+`./client_coinche` suivre les instructions 
+(Il faut bien que chaque client fasse ses actions pour avancer dans le programme) 
 
 ### Structure du dossier
 
@@ -23,6 +31,10 @@ Pour executer ./preparation du coup
     + Annonce
     + Client 
     + Serveur
+- serveur : ensemble des fichiers utiles pour jouer au jeu en mode serveur
+    + Serveur_coinche
+    + Client_coinche
+
 - documentations + fichiers non utilisés
 
 ### Phases de la coinche
