@@ -41,6 +41,7 @@ int init_serveur(void)
 
 void preparation_partie(int sockfd)
 { 
+    //Affichage du paquet de cartes
     char msg[200];
     read(sockfd,msg,sizeof(msg));
     printf("%s\n",msg);
@@ -50,6 +51,11 @@ void preparation_partie(int sockfd)
         read(sockfd,carte,sizeof(carte)); 
         printf("%s\n",carte);
     }
+
+    //Affichage des équipes 
+    char msg_equipe[200];
+    read(sockfd,msg_equipe,sizeof(msg_equipe));
+    printf("%s\n",msg_equipe);
 
 
 }  

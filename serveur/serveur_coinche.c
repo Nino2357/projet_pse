@@ -31,11 +31,13 @@ void partie(void)
 
 void preparation_partie(player *liste_joueur)
 {
+        
+    //Création du paquet de cartes
     deck jeu;
     jeu = creer_tas(); //Création d'un tas ordonné
+    //Affichage du paquet de cartes
     char msg[200];
     sprintf(msg,"Affichage du paquet de cartes: \n");
-    
     write(liste_joueur[0].sockid,msg,sizeof(msg));
     write(liste_joueur[1].sockid,msg,sizeof(msg));
     write(liste_joueur[2].sockid,msg,sizeof(msg));
@@ -48,6 +50,14 @@ void preparation_partie(player *liste_joueur)
         write(liste_joueur[2].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
         write(liste_joueur[3].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
     }
+
+    //Affichage des equipes
+    char msg_equipe[200];
+    sprintf(msg_equipe,"Voici les equipes :\nequipe 1 : %s %s\nequipe 2 : %s %s\n",liste_joueur[0].name,liste_joueur[2].name,liste_joueur[1].name,liste_joueur[3].name);
+    write(liste_joueur[0].sockid,msg_equipe,sizeof(msg_equipe));
+    write(liste_joueur[1].sockid,msg_equipe,sizeof(msg_equipe));   
+    write(liste_joueur[2].sockid,msg_equipe,sizeof(msg_equipe));
+    write(liste_joueur[3].sockid,msg_equipe,sizeof(msg_equipe));
     //shuffle(&jeu);  //Mélange du tas
     //distribuer(&jeu,liste_joueur); //distribution du deck mélangé aux 4 joueurs
 }
@@ -147,7 +157,6 @@ void shuffle(deck* deck){
 
 char* read_card(card c,char *carte)
 {
-
     char* colors[4]={"coeur","carreau","pique","trefle"};
     char* values[13]={"As","2","3","4","5","6","7","8","9","10","Valet","Dame","Roi"};
     sprintf(carte,"%s de %s", values[c.value-1], colors[c.color]);
