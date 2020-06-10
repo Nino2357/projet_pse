@@ -11,6 +11,7 @@ void partie(void)
     int sockfd;
     sockfd = init_serveur();
     preparation_partie(sockfd);
+    tour(sockfd);
 }
  
 int init_serveur(void)
@@ -65,6 +66,7 @@ void tour(int sockfd)
     //Mélange
     //Distribution
     //Affichage de la main :
+    printf("Votre main de départ est : \n");
     char carte[100];
     for(int j=0; j<8; j++)
     {

@@ -24,18 +24,16 @@ void partie(void)
     player liste_joueur[4]={p0,p1,p2,p3};
     init_serveur(liste_joueur);
     deck tas;
-    preparation_partie(liste_joueur);
+    tas = creer_tas();
+    preparation_partie(liste_joueur,&tas);
     printf("-1");
     tour(liste_joueur,&tas);
     printf("ap tour");
 }
 
-void preparation_partie(player *liste_joueur)
+void preparation_partie(player *liste_joueur, deck *jeu)
 {
         
-    //Création du paquet de cartes
-    deck jeu;
-    jeu = creer_tas(); //Création d'un tas ordonné
     //Affichage du paquet de cartes
     char msg[200];
     sprintf(msg,"Affichage du paquet de cartes: \n");
@@ -46,10 +44,10 @@ void preparation_partie(player *liste_joueur)
     char carte[100];
     for(int c=0; c<32;c++)
     {
-        write(liste_joueur[0].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
-        write(liste_joueur[1].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
-        write(liste_joueur[2].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
-        write(liste_joueur[3].sockid,read_card(jeu.tab[c],carte),sizeof(carte));
+        write(liste_joueur[0].sockid,read_card(jeu->tab[c],carte),sizeof(carte));
+        write(liste_joueur[1].sockid,read_card(jeu->tab[c],carte),sizeof(carte));
+        write(liste_joueur[2].sockid,read_card(jeu->tab[c],carte),sizeof(carte));
+        write(liste_joueur[3].sockid,read_card(jeu->tab[c],carte),sizeof(carte));
     }
 
     //Affichage des equipes
@@ -78,7 +76,8 @@ void affichage_main(player *liste_player)
     printf("Joueur %d : \n", 0);
     for(int j=0; j<8; j++)
     {   
-        printf("j: %d, carte %s\n",j,read_card(liste_player[0].hand.tab[j],carte));
+        printf(" carte :%d",liste_player[0].hand.tab[j].value);
+        //printf("j: %d, carte %s\n",j,read_card(liste_player[0].hand.tab[j],carte));
         write(liste_player[0].sockid,read_card(liste_player[0].hand.tab[j],carte),sizeof(carte));
         write(liste_player[1].sockid,read_card(liste_player[1].hand.tab[j],carte),sizeof(carte));
         write(liste_player[2].sockid,read_card(liste_player[2].hand.tab[j],carte),sizeof(carte));
@@ -183,23 +182,31 @@ void shuffle(deck* deck)
 }
 
 void distribuer(deck* tas, player ordre[4]){
-    for(int i=0; i<(tas->size)/4; i++){
+    printf("distrib");
+    for(int i=0; i<(tas->size)/4; i++)
+    {
+
         //printf("%d %d \n",tas->size,i);
-        ordre[0].hand.tab[i]=tas->tab[i*4];
-        tas->tab[i].value=0;
-        ordre[1].hand.tab[i]=tas->tab[i*4+1];
-        tas->tab[i*4+1].value=0;
-        ordre[2].hand.tab[i]=tas->tab[i*4+2];
-        tas->tab[i*4+2].value=0;
-        ordre[3].hand.tab[i]=tas->tab[i*4+3];
-        tas->tab[i*4+3].value=0;
-        //printf("%d %d \n",ordre[0].hand.tab[i].color,ordre[0].hand.tab[i].value);
+        ordre[0].hand.tab[i].color=tas->tab[i*4].color;
+        ordre[0].hand.tab[i].value=tas->tab[i*4].value;
+        //tas->tab[i].value=0;
+        ordre[1].hand.tab[i].color=tas->tab[i*4+1].color;
+        ordre[1].hand.tab[i].value=tas->tab[i*4+1].value;
+        //tas->tab[i*4+1].value=0;
+        ordre[2].hand.tab[i].color=tas->tab[i*4+2].color;
+        ordre[2].hand.tab[i].value=tas->tab[i*4+2].value;
+        //tas->tab[i*4+2].value=0;
+        ordre[3].hand.tab[i].color=tas->tab[i*4+3].color;
+        ordre[3].hand.tab[i].value=tas->tab[i*4+3].value;
+        //tas->tab[i*4+3].value=0;
+        //printf(" couleur %d value %d \n",ordre[0].hand.tab[i].color,ordre[0].hand.tab[i].value);
     }
     //read_hand(ordre[0]);
     ordre[0].hand.size=8;
     ordre[1].hand.size=8;
     ordre[2].hand.size=8;
     ordre[3].hand.size=8;
+    //printf(" carte distrib :%d",ordre[0].hand.tab[0].value);
 }
 
 
