@@ -7,8 +7,7 @@ int main(int argc, char *argv[])
 }
 
 void partie(void)
-{
-    
+{    
     player p0, p1, p2, p3; //Création des joueurs
     team team0, team1; //Création des equipes
     //Initalisation
@@ -26,7 +25,9 @@ void partie(void)
     init_serveur(liste_joueur);
     deck tas;
     preparation_partie(liste_joueur);
-
+    printf("-1");
+    tour(liste_joueur,&tas);
+    printf("ap tour");
 }
 
 void preparation_partie(player *liste_joueur)
@@ -53,15 +54,41 @@ void preparation_partie(player *liste_joueur)
 
     //Affichage des equipes
     char msg_equipe[200];
-    sprintf(msg_equipe,"Voici les equipes :\nequipe 1 : %s %s\nequipe 2 : %s %s\n",liste_joueur[0].name,liste_joueur[2].name,liste_joueur[1].name,liste_joueur[3].name);
+    sprintf(msg_equipe,"\n\nVoici les equipes :\nequipe 1 : %s %s\nequipe 2 : %s %s\n",liste_joueur[0].name,liste_joueur[2].name,liste_joueur[1].name,liste_joueur[3].name);
     write(liste_joueur[0].sockid,msg_equipe,sizeof(msg_equipe));
     write(liste_joueur[1].sockid,msg_equipe,sizeof(msg_equipe));   
     write(liste_joueur[2].sockid,msg_equipe,sizeof(msg_equipe));
     write(liste_joueur[3].sockid,msg_equipe,sizeof(msg_equipe));
-    //shuffle(&jeu);  //Mélange du tas
-    //distribuer(&jeu,liste_joueur); //distribution du deck mélangé aux 4 joueurs
+    
+}
+
+void tour(player *liste_player, deck *jeu)
+{
+    printf("0");
+    shuffle(jeu);  //Mélange du tas
+    printf("1");
+    distribuer(jeu,liste_player); //distribution du deck mélangé aux 4 joueurs
+    printf("2");
+    affichage_main(liste_player);
 }
  
+void affichage_main(player *liste_player)
+{
+    char carte[100];
+    printf("Joueur %d : \n", 0);
+    for(int j=0; j<8; j++)
+    {   
+        printf("j: %d, carte %s\n",j,read_card(liste_player[0].hand.tab[j],carte));
+        write(liste_player[0].sockid,read_card(liste_player[0].hand.tab[j],carte),sizeof(carte));
+        write(liste_player[1].sockid,read_card(liste_player[1].hand.tab[j],carte),sizeof(carte));
+        write(liste_player[2].sockid,read_card(liste_player[2].hand.tab[j],carte),sizeof(carte));
+        write(liste_player[3].sockid,read_card(liste_player[3].hand.tab[j],carte),sizeof(carte));
+
+    
+    }
+    
+}
+
 void init_serveur(player *liste_joueur) //Initialise le serveur et prend les adresses des clients
 {
     //Création du serveur
@@ -141,7 +168,8 @@ deck creer_tas(void) //Crée le tas de 32 cartes dans l'ordre
 
 }
 
-void shuffle(deck* deck){
+void shuffle(deck* deck)
+{
     card temp;
 
     for(int i = 0; i<1000; i++){
@@ -154,11 +182,33 @@ void shuffle(deck* deck){
 
 }
 
+void distribuer(deck* tas, player ordre[4]){
+    for(int i=0; i<(tas->size)/4; i++){
+        //printf("%d %d \n",tas->size,i);
+        ordre[0].hand.tab[i]=tas->tab[i*4];
+        tas->tab[i].value=0;
+        ordre[1].hand.tab[i]=tas->tab[i*4+1];
+        tas->tab[i*4+1].value=0;
+        ordre[2].hand.tab[i]=tas->tab[i*4+2];
+        tas->tab[i*4+2].value=0;
+        ordre[3].hand.tab[i]=tas->tab[i*4+3];
+        tas->tab[i*4+3].value=0;
+        //printf("%d %d \n",ordre[0].hand.tab[i].color,ordre[0].hand.tab[i].value);
+    }
+    //read_hand(ordre[0]);
+    ordre[0].hand.size=8;
+    ordre[1].hand.size=8;
+    ordre[2].hand.size=8;
+    ordre[3].hand.size=8;
+}
+
+
 
 char* read_card(card c,char *carte)
 {
     char* colors[4]={"coeur","carreau","pique","trefle"};
     char* values[13]={"As","2","3","4","5","6","7","8","9","10","Valet","Dame","Roi"};
     sprintf(carte,"%s de %s", values[c.value-1], colors[c.color]);
+    //printf("%s de %s", values[c.value-1], colors[c.color]);
     return carte;
 }

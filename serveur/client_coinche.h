@@ -7,5 +7,6 @@
 void partie(void);
 int init_serveur(void);
 void preparation_partie(int sockfd);
+void tour(int sockfd);
 
 #endif

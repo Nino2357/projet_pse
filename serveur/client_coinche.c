@@ -59,3 +59,17 @@ void preparation_partie(int sockfd)
 
 
 }  
+
+void tour(int sockfd)
+{
+    //Mélange
+    //Distribution
+    //Affichage de la main :
+    char carte[100];
+    for(int j=0; j<8; j++)
+    {
+        read(sockfd,carte,sizeof(carte));
+        printf("%s\n",carte);
+    }
+
+}
