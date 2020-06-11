@@ -2,19 +2,19 @@
 
 int main(int argc, char *argv[])
 {
-    partie();
+    partie(argv);
     return 0;
 }
  
-void partie(void)
+void partie(char* argv)
 {
     int sockfd;
-    sockfd = init_serveur();
+    sockfd = init_serveur(argv);
     preparation_partie(sockfd);
     tour(sockfd);
 }
  
-int init_serveur(void)
+int init_serveur(char* argv)
 {
     struct sockaddr_in addr_serv;
     int sockfd= socket (AF_INET, SOCK_STREAM, 0);
@@ -87,21 +87,17 @@ void annonce(int sockfd)
     char tour[10];
     while (!*fin)
     { 
-        printf("debut while\n");
         read(sockfd, tour, sizeof(tour));//J1
-        printf("tour :%s\n", tour);
         if (!strcmp(tour,"OK"))
         {
-            printf("tour ok\n");
-            sprintf(msg,"Voulez vous miser ?");
+            sprintf(msg,"\nVoulez vous miser ?");
             printf("%s",msg);
-            sprintf(msg,"Oui (1) / Non (0) : ");
+            sprintf(msg,"\nOui (1) / Non (0) : ");
             printf("%s",msg);
             scanf("%d",&choix); 
             write(sockfd,&choix,sizeof(choix)); //R1 -Choix mise ou non
             if(choix==1)
             {
-                printf("Dans choix\n");
                 //Choix couleur
                 read(sockfd,msg,sizeof(msg));//w3
                 printf("%s",msg);
@@ -114,13 +110,9 @@ void annonce(int sockfd)
                 write(sockfd,&choix,sizeof(choix));//R3
             }
         }
-        printf("fin tour \n");
-
         read(sockfd,msg,sizeof(msg)); //M1
         printf("%s",msg);
         read(sockfd, fin, sizeof(fin)); //F1
-
-        printf("fin while, fin : %d \n",*fin);
     }
     read(sockfd,msg,sizeof(msg)); //MF1
     printf("%s",msg);
