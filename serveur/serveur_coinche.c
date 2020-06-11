@@ -9,26 +9,27 @@ int main(int argc, char *argv[])
 void partie(void)
 {    
     player p0, p1, p2, p3; //Création des joueurs
-    team team0, team1; //Création des equipes
+    //team team0, team1; //Création des equipes
     //Initalisation
     p0.id = 0;
     p1.id = 1;
     p2.id = 2;
     p3.id = 3;
+    /*
     team0.p0= p0;
     team0.p1= p2;
     team1.p0= p1;
     team1.p1= p3;
     team0.id = 0;
-    team1.id = 1;
+    team1.id = 1;*/
     player liste_joueur[4]={p0,p1,p2,p3};
     init_serveur(liste_joueur);
     deck tas;
     tas = creer_tas();
     preparation_partie(liste_joueur,&tas);
-    printf("-1");
+    //printf("-1");
     tour(liste_joueur,&tas);
-    printf("ap tour");
+    printf("\nap tour");
 }
 
 void preparation_partie(player *liste_joueur, deck *jeu)
@@ -62,28 +63,24 @@ void preparation_partie(player *liste_joueur, deck *jeu)
 
 void tour(player *liste_player, deck *jeu)
 {
-    printf("0");
     shuffle(jeu);  //Mélange du tas
-    printf("1");
     distribuer(jeu,liste_player); //distribution du deck mélangé aux 4 joueurs
-    printf("2");
     affichage_main(liste_player);
+    annonce(liste_player);
 }
  
 void affichage_main(player *liste_player)
 {
     char carte[100];
-    printf("Joueur %d : \n", 0);
+    //printf("Joueur %d : \n", 0);
     for(int j=0; j<8; j++)
     {   
-        printf(" carte :%d",liste_player[0].hand.tab[j].value);
+        //printf(" carte :%d",liste_player[0].hand.tab[j].value);
         //printf("j: %d, carte %s\n",j,read_card(liste_player[0].hand.tab[j],carte));
         write(liste_player[0].sockid,read_card(liste_player[0].hand.tab[j],carte),sizeof(carte));
         write(liste_player[1].sockid,read_card(liste_player[1].hand.tab[j],carte),sizeof(carte));
         write(liste_player[2].sockid,read_card(liste_player[2].hand.tab[j],carte),sizeof(carte));
         write(liste_player[3].sockid,read_card(liste_player[3].hand.tab[j],carte),sizeof(carte));
-
-    
     }
     
 }
@@ -182,7 +179,7 @@ void shuffle(deck* deck)
 }
 
 void distribuer(deck* tas, player ordre[4]){
-    printf("distrib");
+    //printf("distrib");
     for(int i=0; i<(tas->size)/4; i++)
     {
 
@@ -218,4 +215,108 @@ char* read_card(card c,char *carte)
     sprintf(carte,"%s de %s", values[c.value-1], colors[c.color]);
     //printf("%s de %s", values[c.value-1], colors[c.color]);
     return carte;
+}
+
+void annonce(player ordre[4])
+{
+    printf("debut annonce\n");
+    int abstention_max = 3;
+    int abstention = 0;
+    int fin = 0;
+    bet *mise;
+    mise = malloc(sizeof(bet));
+    char tour[3];
+    int *choix;
+    choix = malloc(sizeof(int));
+    int temp;
+    mise->goal = 0; //Permet d'indiquer qu'aucune equipe n'a misé
+    char msg[300];
+    while (!fin)
+    { 
+        printf("debut while\n");
+        for(int t=0; t<4;t++)
+        {
+            printf("debut for du j%d\n",t);
+            sprintf(tour,"OK"); 
+            write(ordre[t].sockid,tour,sizeof(tour));//J1
+            for(int j=0; j<4;j++)
+            {
+                if (j!=t)
+                {
+                    sprintf(tour,"NO");
+                    write(ordre[j].sockid,tour,sizeof(tour));
+                }
+            }
+
+            read(ordre[t].sockid,choix,sizeof(choix));//R1
+            printf("msg annonce\n");
+            if(*choix == 0) //Si le joueur ne souhaite pas miser
+            {
+                abstention ++;
+            }
+            if (*choix !=0)
+            {                    
+                sprintf(msg,"\nCouleur : (0 = coeur, 1 = carreau, 2 = pique, 3 = trefle) ");
+                write(ordre[t].sockid,msg,sizeof(msg));//W3
+                read(ordre[t].sockid,&temp,sizeof(int*));//R2
+                mise->color = temp;
+                sprintf(msg,"\nMontant : (80 à 180 et 250 pour capot) ");
+                write(ordre[t].sockid,msg,sizeof(msg));//w4
+                read(ordre[t].sockid,&temp,sizeof(int*));//R3
+                mise->goal=temp;
+                mise->joueur = ordre[t];
+                mise->equipe.id = ordre[t].team_id;
+                abstention = 1; //Pour contrer le fait que au 1er tout il faille 4 abstention et seulement 3 aux autres
+
+            }
+            sprintf(msg,"La mise est :\nCouleur((0 = coeur, 1 = carreau, 2 = pique, 3 = trefle)): %d \nObjectif: %d \nPar le joueur :%s (p%d)\n", mise->color,mise->goal,mise->joueur.name,mise->joueur.id);
+            write(ordre[0].sockid,msg,sizeof(msg)); //M1
+            write(ordre[1].sockid,msg,sizeof(msg));
+            write(ordre[2].sockid,msg,sizeof(msg));
+            write(ordre[3].sockid,msg,sizeof(msg));
+            /*if(abstention>abstention_max) //Detecte la fin des mises dans le for
+            {
+                sprintf(msg,"Fin de la phase d'annonce\n");
+                write(ordre[t].sockid,msg,sizeof(msg));
+               // break;
+            }
+            */
+    
+            if(abstention>abstention_max) //Detecte la fin des mises dans le while
+            {
+                fin = 1;
+                write(ordre[0].sockid,&fin,sizeof(fin));//F1
+                write(ordre[1].sockid,&fin,sizeof(fin));
+                write(ordre[2].sockid,&fin,sizeof(fin));
+                write(ordre[3].sockid,&fin,sizeof(fin));
+                printf("fin = 1\n");
+                break;
+            }
+            if(abstention<=abstention_max)
+            {
+                fin = 0;
+                write(ordre[0].sockid,&fin,sizeof(fin));//F1
+                write(ordre[1].sockid,&fin,sizeof(fin));
+                write(ordre[2].sockid,&fin,sizeof(fin));
+                write(ordre[3].sockid,&fin,sizeof(fin));
+                printf("fin = 0\n");
+            }
+        }
+    }
+    if(mise->goal==0)
+    {
+        sprintf(msg,"Personne n'a misé, on redistribue\n");
+        write(ordre[0].sockid,msg,sizeof(msg));//MF1
+        write(ordre[1].sockid,msg,sizeof(msg));
+        write(ordre[2].sockid,msg,sizeof(msg));
+        write(ordre[3].sockid,msg,sizeof(msg));
+    }
+    else
+    {
+        sprintf(msg,"La mise finale est :\n Couleur((0 = coeur, 1 = carreau, 2 = pique, 3 = trefle)): %d \nObjectif: %d \nPar le joueur : %s (p%d)\n", mise->color,mise->goal,mise->joueur.name,mise->joueur.id);
+        write(ordre[0].sockid,msg,sizeof(msg));//MF1
+        write(ordre[1].sockid,msg,sizeof(msg));
+        write(ordre[2].sockid,msg,sizeof(msg));
+        write(ordre[3].sockid,msg,sizeof(msg));
+    } 
 }

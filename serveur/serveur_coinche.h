@@ -13,5 +13,6 @@ void tour(player *liste_player, deck *jeu);
 void shuffle(deck* deck);
 void distribuer(deck* tas, player ordre[4]);
 void affichage_main(player *liste_player);
+void annonce(player ordre[4]);
 
 #endif

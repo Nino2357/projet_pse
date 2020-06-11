@@ -73,5 +73,55 @@ void tour(int sockfd)
         read(sockfd,carte,sizeof(carte));
         printf("%s\n",carte);
     }
+    annonce(sockfd);
 
 }
+
+void annonce(int sockfd)
+{
+    char msg[300];
+    int *fin;
+    int fin1 =0;
+    fin = &fin1;
+    int choix = 0;
+    char tour[10];
+    while (!*fin)
+    { 
+        printf("debut while\n");
+        read(sockfd, tour, sizeof(tour));//J1
+        printf("tour :%s\n", tour);
+        if (!strcmp(tour,"OK"))
+        {
+            printf("tour ok\n");
+            sprintf(msg,"Voulez vous miser ?");
+            printf("%s",msg);
+            sprintf(msg,"Oui (1) / Non (0) : ");
+            printf("%s",msg);
+            scanf("%d",&choix); 
+            write(sockfd,&choix,sizeof(choix)); //R1 -Choix mise ou non
+            if(choix==1)
+            {
+                printf("Dans choix\n");
+                //Choix couleur
+                read(sockfd,msg,sizeof(msg));//w3
+                printf("%s",msg);
+                scanf("%d",&choix);
+                write(sockfd,&choix,sizeof(choix));//R2
+                //Choix montant
+                read(sockfd,msg,sizeof(msg));//W4
+                printf("%s",msg);
+                scanf("%d",&choix); 
+                write(sockfd,&choix,sizeof(choix));//R3
+            }
+        }
+        printf("fin tour \n");
+
+        read(sockfd,msg,sizeof(msg)); //M1
+        printf("%s",msg);
+        read(sockfd, fin, sizeof(fin)); //F1
+
+        printf("fin while, fin : %d \n",*fin);
+    }
+    read(sockfd,msg,sizeof(msg)); //MF1
+    printf("%s",msg);
+} 
