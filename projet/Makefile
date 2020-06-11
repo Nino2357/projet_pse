@@ -2,7 +2,7 @@
 #
 include ../Makefile.inc
 
-EXE = serveur client preparation annonce serveur2 client2
+EXE = serveur_coinche client_coinche
 
 all: ${EXE}
 
